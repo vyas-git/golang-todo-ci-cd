@@ -51,8 +51,8 @@ jobs:
       # Push image to Google Container Registry
       - name: Build
         run: |-
-          docker push gcr.io/ ${{ secrets.GKE_PROJECT }}/todo_server:latest
-          docker push gcr.io/ ${{ secrets.GKE_PROJECT }}/todo_client:latest
+          docker push gcr.io/$PROJECT_ID/todo_server:latest
+          docker push gcr.io/$PROJECT_ID/todo_client:latest
   deploy:
     needs: build
     name: Deploy
@@ -67,6 +67,6 @@ jobs:
           location: ${{ env.GKE_ZONE }}
           credentials: ${{ secrets.GKE_SA_KEY }}
       - name: apply && wait
-        run: kubectl apply -f k8s/todo-rpc-pod.yml 
+        run: kubectl delete pod todo-rpc-pod && kubectl apply -f k8s/todo-rpc-pod.yml 
       - name: apply && wait
-        run: kubectl apply -f k8s/todo-pod.yml 
+        run: kubectl delete pod todo-client-pod  && kubectl apply -f k8s/todo-pod.yml 
