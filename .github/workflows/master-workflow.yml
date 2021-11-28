@@ -8,10 +8,8 @@ on:
       - 'main'
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
-  GKE_CLUSTER: todo-cluster
-  GKE_ZONE: europe-central2-a
-  DEPLOYMENT_NAME: gke-prod
-  IMAGE: todo-list-902/todo_server
+  GKE_CLUSTER: dev
+  GKE_ZONE: europe-west1-b
 
 jobs:
   test:

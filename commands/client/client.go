@@ -43,9 +43,8 @@ func dialRPC() {
 }
 func initRoutes() {
 	r := chi.NewRouter()
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World!"))
-	})
+	r.Method("GET", "/", handler(indexTodos))
+
 	r.Method("GET", "/todos", handler(indexTodos))
 	r.Method("POST", "/addtodo", handler(createTodo))
 	r.Method("GET", "/getTodos", handler(getTodos))
