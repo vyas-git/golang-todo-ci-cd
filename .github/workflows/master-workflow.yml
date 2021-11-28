@@ -1,0 +1,75 @@
+name: Todo Pipeline
+on:
+  pull_request:
+    branches:
+      - 'main'
+  push:
+    branches:
+      - 'main'
+env:
+  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+  GKE_CLUSTER: todo-cluster
+  GKE_ZONE: europe-central2-a
+  DEPLOYMENT_NAME: gke-prod
+  IMAGE: todo-list-902/todo_server
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.4
+      - uses: actions/checkout@v2
+      - name: Run Unit Tests
+        run: go test -v ./tests
+      - name: Fetch required Go modules
+        run: go mod download
+      - name: Build
+        run: go build -o todo-app ./main.go
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+     # Setup gcloud CLI
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.GKE_SA_KEY }}
+          project_id: ${{ secrets.GKE_PROJECT }}
+          export_default_credentials: true
+    # Build docker image
+      - name: Todo RPC Server Image
+        run: |-
+          docker build -t gcr.io/ ${{ secrets.GKE_PROJECT }}/todo_server:latest -f Dockerfile.server .
+      - name: Todo Client Image
+        run: |-
+          docker build -t gcr.io/ ${{ secrets.GKE_PROJECT }}/todo_client:latest -f Dockerfile.client .
+    
+      # Configure docker to use the gcloud command-line tool as a credential helper
+      - run: |
+          gcloud auth configure-docker -q
+      # Push image to Google Container Registry
+      - name: Build
+        run: |-
+          docker push gcr.io/ ${{ secrets.GKE_PROJECT }}/todo_server:latest
+          docker push gcr.io/ ${{ secrets.GKE_PROJECT }}/todo_client:latest
+  deploy:
+    needs: build
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+    
+      - uses: google-github-actions/get-gke-credentials@main
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_ZONE }}
+          credentials: ${{ secrets.GKE_SA_KEY }}
+      - name: apply && wait
+        run: kubectl apply -f k8s/todo-rpc-pod.yml 
+      - name: apply && wait
+        run: kubectl apply -f k8s/todo-pod.yml 
