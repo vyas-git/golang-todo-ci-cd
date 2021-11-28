@@ -9,7 +9,7 @@ docker-compose build
 ```
 docker-compose up
 ```
-* Open localhost:3000 - Frontend
+* Open http://localhost:3000 - Frontend
 * RPC server runs on :9090 
 
 
