@@ -1,0 +1,118 @@
+<html>
+
+<head>
+	<style>
+		.todo-header {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			flex-direction: column;
+		}
+
+		.todo-header .add-todo-wrapper {
+			width: 100%;
+			align-items: center;
+			justify-content: center;
+			display: flex;
+		}
+
+		.todo-header .add-todo-wrapper #todo-input {
+			width: 80%;
+		}
+
+		.todo-header .add-todo-wrapper #add-btn {
+			margin-left: 5px;
+		}
+
+		#todo-list li {
+			display: inline;
+			width: 200px;
+
+		}
+
+		#todo-list span {
+			cursor: pointer;
+			color: red;
+			margin-left: 20px;
+			font-style: italic;
+			float: right;
+
+		}
+
+		#todo-list br {
+			display: block;
+			border-bottom: 1px dashed #ccc;
+			content: "";
+			margin-bottom: 15px;
+
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="todo-header">
+		<h1>{{.PageTitle}}</h1>
+		<div class="add-todo-wrapper">
+			<input type="text" placeholder="Write your task " id="todo-input" />
+			<button id="add-btn" onclick="createTodo()">Add</button>
+		</div>
+	</div>
+	<ul id="todo-list">
+		{{range .Todos}}
+		<li>{{.Title}}</li> <span title="Remove" onclick="deleteTodo({{.Id}})">X</span><br>
+		{{end}}
+	</ul>
+	<script>
+		function createTodo() {
+			var todo_val = document.getElementById("todo-input").value
+			if (todo_val.length < 3) {
+				alert("Task should be atleast three letters")
+				return false
+			}
+			fetch('/addtodo', {
+				method: 'post',
+				headers: {
+					'Accept': 'application/json, text/plain, */*',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ title: todo_val })
+			}).then(res => {
+				document.getElementById("todo-input").value = ""
+				getTodos()
+			})
+
+		}
+		function getTodos() {
+			fetch("/getTodos").then(res => res.json())
+				.then(res => {
+					let lis = "";
+					res.items.map((item) => {
+						lis += "<li>" + item.title + "</li>";
+						lis += "<span title='Remove' onclick=deleteTodo(" + item.id + ")>X</span><br>";
+
+					});
+					document.getElementById("todo-list").innerHTML = lis
+				});
+		}
+		function deleteTodo(id) {
+			fetch("/deleteTodo/" + id, {
+				method: 'delete',
+				headers: {
+					'Accept': 'application/json, text/plain, */*',
+					'Content-Type': 'application/json'
+				},
+			}).then(res => res.json())
+				.then(res => {
+					let lis = "";
+					res.items ? res.items.map((item) => {
+						lis += "<li>" + item.title + "</li>";
+						lis += "<span title='Remove' onclick=deleteTodo(" + item.id + ")>X</span><br>";
+					}) : null;
+					document.getElementById("todo-list").innerHTML = lis
+				});
+		}
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: todo-client-pod
+  labels:
+    name: todo-client-pod
+    app:  todo-client
+spec:
+  containers:
+    - name: todo-app
+      image: gcr.io/todo-list-902/todo_client:latest
+      ports:
+        - containerPort:  3000
+

@@ -1,0 +1,36 @@
+version: '3'
+services:
+  todo_server:
+    container_name: todo-rpc-service
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    image: "gcr.io/todo-list-902/todo_server"
+
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./:/todo_s
+    restart: on-failure
+    networks:
+      - fullstack
+  todo_client:
+    container_name: todo_client
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    image: "gcr.io/todo-list-902/todo_client"
+
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/todo_c
+    restart: on-failure
+    depends_on:
+      - todo_server
+    networks:
+      - fullstack
+
+networks:
+  fullstack:
+    driver: bridge

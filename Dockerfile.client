@@ -1,0 +1,30 @@
+# Start from golang base image
+FROM golang:alpine as builder
+
+#ENV GO111MODULE=on
+
+# Git is required for fetching the dependencies.
+#RUN apk update && apk add --no-cache git  && apk add --update gcc musl-dev
+
+RUN mkdir /todo_c
+WORKDIR /todo_c
+COPY . .
+
+# Download all dependencies. Dependencies will be cached if the go.mod and the go.sum files are not changed
+RUN go mod download
+
+# Build the go app
+RUN cd commands/client && go build -o client . 
+RUN cd ../../
+
+# Start a new stage from scratch
+FROM alpine:latest
+#RUN apk --no-cache add ca-certificates
+
+WORKDIR /root/
+
+# Copy the pre-built binary file and .env from the previous stage.
+COPY --from=builder /todo_c/commands/client/client .
+COPY todolist.html .
+
+ENTRYPOINT ./client
