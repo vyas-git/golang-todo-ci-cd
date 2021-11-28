@@ -1,17 +1,17 @@
 # go-todo-app-rpc
 Golang Todo App with rpc protocol ,k8s, github actions
 
-### Generate code from proto files
+
+### using docker-compose locally
 ```
-bash ./gen.sh
+docker-compose build
+```
+```
+docker-compose up
 ```
 
-### run server app
-```
-go run go-grpc/commands/server
-```
+### CI/CD Deploy Production GKE
+* Git push to main branch
+![alt text](https://raw.githubusercontent.com/saivyas/golang-todo-ci-cd/main/assets/screenshots/cicd_workflow.png)
 
-### run client app
-```
-go run go-grpc/commands/client
-```
+
