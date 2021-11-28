@@ -23,7 +23,7 @@ jobs:
           go-version: 1.16.4
       - uses: actions/checkout@v2
       - name: Run Unit Tests
-        run: go test -v ./test
+        run: go test -v ./test/unit
       - name: Fetch required Go modules
         run: go mod download
       - name: Build
